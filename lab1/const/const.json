@@ -1,0 +1,21 @@
+{
+  "sizeErr": 1,
+  "noModelErr": 2,
+  "activations": {
+    "bipolar": "Bipolar",
+    "binary": "Binary"
+  },
+  "activationConst": {
+    "binary": {
+      "binaryPositive": 1,
+      "binaryZero": 0,
+      "binaryNegative": -1,
+      "text": "Бинарная"
+    },
+    "bipolar": {
+      "bipolarPositive": 1,
+      "bipolarNegative": -1,
+      "text": "Биполярная"
+    }
+  }
+}
