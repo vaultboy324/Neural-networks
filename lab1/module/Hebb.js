@@ -11,11 +11,13 @@ let nodeScheme = new Schema({
         average: Number,
         firstResult: {
             value: Number,
-            status: Number
+            status: Number,
+            x: Array
         },
         secondResult: {
             value: Number,
-            status: Number
+            status: Number,
+            x:Array
         },
         way: String,
         wayText: String
@@ -32,7 +34,7 @@ module.exports = {
 
         switch (oParameters.activation) {
             case constants.activations.bipolar:
-                result = await this.bipolar(oParameters)
+                result = await this.bipolar(oParameters);
                 break;
             case constants.activations.binary:
                 result = await this.binary(oParameters);
@@ -52,10 +54,6 @@ module.exports = {
         let nodes = await this.Node.find({}).exec();
 
         return await nodes[0].toObject().neuron;
-
-        // return {
-        //     string: "Hello world!"
-        // }
     },
 
     async bipolar(oParameters) {
@@ -108,7 +106,9 @@ module.exports = {
         let result = {
             errorCode: null,
             value: null,
-            status: null
+            status: null,
+            equalFirst: 0,
+            equalSecond: 0,
         };
 
         let matrix = oParameters.researchMatr;
@@ -146,6 +146,17 @@ module.exports = {
         }
 
         result.value = this.__getResult(w, x);
+        // result.value = this.__getLinearBipolarResult(w, x, Math.min.apply(Math, w), Math.max.apply(Math, w));
+
+        result.equalFirst = this.__getEqualsCount(neuron.firstResult.x, x);
+        result.equalSecond = this.__getEqualsCount(neuron.secondResult.x, x);
+
+        let range = Math.abs(neuron.firstResult.value - neuron.secondResult.value);
+
+        let rightPoint = range / 3;
+        let leftPoint = -rightPoint;
+
+        result.value = this.__getLinearBipolarResult(result.value, leftPoint, rightPoint);
 
         if(result.value > average){
             result.status = positive
@@ -208,12 +219,14 @@ module.exports = {
 
         let firstResult = {
             value: null,
-            status: null
+            status: null,
+            x: first.x
         };
 
         let secondResult = {
             value: null,
-            status: null
+            status: null,
+            x: second.x
         };
 
         firstResult.value = this.__getResult(w, first.x);
@@ -335,6 +348,24 @@ module.exports = {
         return result;
     },
 
+    __getLinearBipolarResult(S, sigmaOne, sigmaTwo){
+        if(S < sigmaOne){
+            return -1;
+        } else if (sigmaOne < S && S < sigmaTwo){
+            return 0.4 * S + 5;
+        } else if (S > sigmaTwo){
+            return 1;
+        }
+    },
+
+    __getEqualsCount(aOld, aNew){
+      let result = 0;
+      aOld.forEach((element, index)=>{
+         if(element === aNew[index]) ++result;
+      });
+
+      return result;
+    },
     async insertNode(oParameters) {
         mongoose.connect(config.mongoose.uri, {
             useNewUrlParser: true,

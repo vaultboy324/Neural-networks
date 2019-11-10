@@ -432,6 +432,8 @@ class ColorsTable extends React.Component {
                             ? <div>
                                 <h3>Результаты анализа</h3>
                                 <p>Значение сигнала: {this.state.researchInfo.value}, его код: {this.state.researchInfo.status}</p>
+                                <p>Соответствие с первым изображением: {this.state.researchInfo.equalFirst}</p>
+                                <p>Соответствие с первым изображением: {this.state.researchInfo.equalSecond}</p>
                             </div>
                             : null
                     }
