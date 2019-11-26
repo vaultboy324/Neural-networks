@@ -14,6 +14,26 @@ class Page extends React.Component {
                 ["black", "white", "black", "white", "black"],
                 ["white", "black", "white", "black", "white"]],
         tables: [],
+        activation: constants.activations.bipolar,
+        learnResults: {
+            first: {
+                arr: [],
+                w: [],
+                avg: 0
+            },
+            second: {
+                arr: [],
+                w: [],
+                avg: 0
+            },
+            avg: 0,
+            activation: ""
+        },
+        researchResults: {
+            equals: [],
+            status: 0,
+            value: 0
+        }
     };
 
     constructor(props) {
@@ -122,9 +142,13 @@ class Page extends React.Component {
 
     async learn(e){
       let body = this.__getDataForRequest();
+      if(body.tables.length !== 4){
+          alert("Обучать можно только на четырёх изображениях");
+          return;
+      }
       const jsonString = JSON.stringify(body);
 
-      const response = await fetch(`${config.server}/learn`,{
+      await fetch(`${config.server}/learn`,{
          method:'POST',
          headers: {
              'Accept': 'application/json',
@@ -134,8 +158,30 @@ class Page extends React.Component {
           body: jsonString
       });
 
-      return await response.json();
+      await this.__getLearnResults();
     };
+
+    async research(e){
+        let body = this.__getDataForRequest();
+        if(body.tables.length !== 1){
+            alert("Исследовать можно только одно изображение");
+            return ;
+        }
+        const jsonString = JSON.stringify(body);
+
+        let response = await fetch(`${config.server}/research`, {
+            method:'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json',
+                'Content-string': jsonString.length
+            },
+            body: jsonString
+        });
+
+        let researchResults = await response.json();
+        this.setState({researchResults});
+    }
 
     __getDataForRequest() {
         let coloredTables = this.state.tables;
@@ -146,7 +192,8 @@ class Page extends React.Component {
         });
 
         return ({
-            tables
+            tables,
+            activation: this.state.activation
         })
     }
 
@@ -174,16 +221,33 @@ class Page extends React.Component {
     };
 
     changeActivation = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         this.setState({
                 activation: e.currentTarget.value
             }
         )
     };
 
+    async __getLearnResults(){
+        let response = await fetch(`${config.server}`);
+        let learnResults = await response.json();
+
+        this.setState({learnResults});
+    }
+
+    async componentWillMount(){
+        await this.__getLearnResults();
+    }
+
     render() {
         return (
             <div className="App">
+                <div>
+                    <h3>Результаты последнего обучения:</h3>
+                    <p>Среднее арифметическое: {this.state.learnResults.avg}</p>
+                    <p>Значение первого класса: {this.state.learnResults.first.avg}</p>
+                    <p>Значение второго класса: {this.state.learnResults.second.avg}</p>
+                </div>
                 <div>
                     <button className="btn btn-outline-success myBtn" onClick={this.addElement.bind(this)}>Добавить элемент</button>
                     <button className="btn btn-outline-danger myBtn" onClick={this.deleteElement.bind(this)}>Удалить элемент</button>
@@ -197,6 +261,23 @@ class Page extends React.Component {
                     <button className="btn btn-outline-danger myBtn" onClick={this.deleteRow.bind(this)}>Удалить строку</button>
                 </div>
                 <div>
+                    <div className="Radiogroup">
+                        <p><input type="radio" name="activation"
+                                  value={constants.activations.bipolar}
+                                  checked={this.state.activation === constants.activations.bipolar}
+                                  onChange={this.changeActivation}/>Биполярная функция
+                            активации</p>
+                        <p><input type="radio" name="activation"
+                                  value={constants.activations.binary}
+                                  onChange={this.changeActivation}/>Бинарная функция
+                            активации</p>
+                        <p><input type="radio" name="activation"
+                                  value={constants.activations.linear}
+                                  onChange={this.changeActivation}/>Линейная биполярная функция
+                            активации</p>
+                    </div>
+                </div>
+                <div>
                     {
                         this.state.tables.map((table, tableNum)=>{
                             return(<Table num={tableNum} rows={table} onClick={this.changeColor}/>)
@@ -205,7 +286,17 @@ class Page extends React.Component {
                 </div>
                 <div>
                     <button className="btn btn-outline-primary myBtn" onClick={this.learn.bind(this)}>Обучить</button>
-                    <button className="btn btn-outline-primary myBtn">Исследовать</button>
+                    <button className="btn btn-outline-primary myBtn" onClick={this.research.bind(this)}>Исследовать</button>
+                </div>
+                <div>
+                    <h3>Результаты исследования</h3>
+                    {
+                        this.state.researchResults.equals.map((result, index)=>{
+                          return(<p>Степень соответствия с {index + 1} картинкой: {result}</p>)
+                        })
+                    }
+                    <p>Класс: {this.state.researchResults.status}</p>
+                    <p>Значение: {this.state.researchResults.value}</p>
                 </div>
             </div>
         )

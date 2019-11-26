@@ -20,12 +20,13 @@ app.use((req, res, next) => {
 });
 
 app.get("/", async (req, res)=>{
-   let result = await hebb.getNode();
-   res.send(result);
+    res.send(await hebb.getLearnResult());
 });
 
 app.post("/learn", async(req, res) => {
     console.log(req.body);
+    await hebb.learn(req.body);
+    // console.log(req.body);
 });
 
 app.post("/research", async(req, res) => {

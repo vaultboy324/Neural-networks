@@ -3,7 +3,8 @@
   "noModelErr": 2,
   "activations": {
     "bipolar": "Bipolar",
-    "binary": "Binary"
+    "binary": "Binary",
+    "linear": "Linear"
   },
   "activationConst": {
     "binary": {
