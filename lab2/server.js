@@ -21,7 +21,6 @@ app.get("/", async (req, res)=>{
 });
 
 app.post("/learn", async(req, res) => {
-    console.log(req.body);
     await hebb.learn(req.body);
     // console.log(req.body);
 });

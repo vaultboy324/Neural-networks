@@ -6,7 +6,9 @@ const constants = require('../const/const');
 
 let nodeSchema = new Schema({
     node: {
-
+        tables: [],
+        arrays: [],
+        neurons: []
     },
 }, {
     versionKey: false

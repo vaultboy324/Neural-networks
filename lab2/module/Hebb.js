@@ -334,6 +334,8 @@ module.exports = {
         }
 
         console.log(oParameters);
+        node.delete();
+        node.create(oParameters);
         // oParameters.classes = this.__getClasses(oParameters);
         //
         // oParameters.classes.first.w = this.__getWeights({
