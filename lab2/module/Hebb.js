@@ -94,13 +94,13 @@ module.exports = {
     __getWeights(oParameters) {
         let w = [];
 
-        let getValue;
+        let getValue = this.__getBinaryValue;
 
-        if (oParameters.activation === constants.activations.binary) {
-            getValue = this.__getBinaryValue;
-        } else {
-            getValue = this.__getBipolarValue;
-        }
+        // if (oParameters.activation === constants.activations.binary) {
+        //     getValue = this.__getBinaryValue;
+        // } else {
+        //     getValue = this.__getBipolarValue;
+        // }
 
         if (!oParameters.w) {
             w[0] = 0;
@@ -141,7 +141,7 @@ module.exports = {
 
         let currentElement;
 
-        oParameters.info.forEach((node, index) => {
+        oParameters.info.arr.forEach((node, index) => {
             if(node.y < 1){
                 result += node.sum;
             } else {
@@ -149,7 +149,7 @@ module.exports = {
             }
         });
 
-        result /= oParameters.info.length - 1;
+        result /= oParameters.info.arr.length - 1;
 
         result = (result + currentElement) / 2;
 
@@ -160,11 +160,11 @@ module.exports = {
         let positive = 1;
         let negative = 0;
 
-        if (oParameters.activation === constants.activations.bipolar) {
-            negative = -1;
-        }
+        // if (oParameters.activation === constants.activations.bipolar) {
+        //     negative = -1;
+        // }
 
-        oParameters.info.forEach((node, index)=>{
+        oParameters.info.arr.forEach((node, index)=>{
            if(node.sum > oParameters.avg){
                node.status = positive
            }  else {
@@ -184,7 +184,9 @@ module.exports = {
     __getArrays(oParameters) {
         let result = [];
 
-        let toArray = oParameters.activation === constants.activations.binary ? this.__toBinaryArray : this.__toBipolarArray;
+        let toArray = this.__toBinaryArray;
+
+        // let toArray = oParameters.activation === constants.activations.binary ? this.__toBinaryArray : this.__toBipolarArray;
         oParameters.tables.forEach((table, tableNum) => {
             result.push(toArray(table));
         });
@@ -196,16 +198,18 @@ module.exports = {
         let result = [];
 
         let positive = 1;
-        let negative = oParameters.activation === constants.activations.binary ? 0 : -1;
+        let negative = 0;
 
         oParameters.arrays.forEach((array, arrayNum) => {
-            let neuron = {info: []};
+            let neuron = {info: {
+                arr: []
+                }};
             oParameters.arrays.forEach((array, index) => {
                 let node = {
                     x: array,
                     y: arrayNum === index ? positive : negative
                 };
-                neuron.info.push(node);
+                neuron.info.arr.push(node);
             });
             result.push(neuron)
         });
@@ -216,9 +220,9 @@ module.exports = {
     __getBadNodes(oParameters) {
         let result = [];
 
-        let negative = oParameters.activation === constants.activations.binary ? 0 : -1;
+        let negative = 0;
 
-        oParameters.info.forEach((node, index) => {
+        oParameters.info.arr.forEach((node, index) => {
             if (node.sum > oParameters.avg && node.y === negative || node.sum < oParameters.avg && node.y === 1) {
                 result.push(node);
             }
@@ -242,14 +246,14 @@ module.exports = {
     __fixWeights(oParameters) {
         oParameters.badNodes.forEach((badNode, index) => {
             if (badNode.status > badNode.y) {
-                let deltaW = 0.5 * badNode.y;
+                let deltaW = 0.01 * this.__getBinaryValue(1, badNode.y);
                 oParameters.info.w[0] += deltaW;
             } else if (badNode.status < badNode.y){
-                let deltaW = 0.5 * badNode.y;
+                let deltaW = 0.01 * this.__getBinaryValue(1, badNode.y);
                 oParameters.info.w[0] -= deltaW;
             }
             badNode.x.forEach((element, elementNum) => {
-                let deltaW = 0.5 * badNode.y * element;
+                let deltaW = 0.01 * this.__getBinaryValue(element, badNode.y);
                 if (badNode.status < badNode.y) {
                     oParameters.info.w[elementNum - 1] += deltaW;
                 } else if (badNode.status > badNode.y) {
@@ -277,7 +281,7 @@ module.exports = {
 
         oParameters.neurons.forEach((neuron, index) => {
             neuron.info.w = this.__getWeights({
-                arr: neuron.info,
+                arr: neuron.info.arr,
                 w: neuron.info.w,
                 activation: oParameters.activation
             });
@@ -285,7 +289,7 @@ module.exports = {
         });
 
         oParameters.neurons.forEach((neuron, index) => {
-            neuron.info.forEach((node, nodeNum) => {
+            neuron.info.arr.forEach((node, nodeNum) => {
                 node.sum = this.__getSum({
                     w: neuron.info.w,
                     x: node.x
@@ -311,7 +315,7 @@ module.exports = {
                 if (neuron.badNodes.length > 0) {
                     this.__fixWeights(neuron);
 
-                    neuron.info.forEach((node, nodeNum) => {
+                    neuron.info.arr.forEach((node, nodeNum) => {
                         node.sum = this.__getSum({
                             w: neuron.info.w,
                             x: node.x
@@ -334,59 +338,8 @@ module.exports = {
         }
 
         console.log(oParameters);
-        node.delete();
-        node.create(oParameters);
-        // oParameters.classes = this.__getClasses(oParameters);
-        //
-        // oParameters.classes.first.w = this.__getWeights({
-        //     arr: oParameters.classes.first.arr,
-        //     activation: oParameters.activation,
-        //     w: oParameters.classes.second.w
-        // });
-        // oParameters.classes.second.w = this.__getWeights({
-        //     arr: oParameters.classes.second.arr,
-        //     activation: oParameters.activation,
-        //     w: oParameters.classes.first.w
-        // });
-        //
-        // oParameters.classes.first.arr[0].value = this.__getSum({
-        //     w: oParameters.classes.second.w,
-        //     x: oParameters.classes.first.arr[0].x
-        // });
-        // oParameters.classes.first.arr[1].value = this.__getSum({
-        //     w: oParameters.classes.second.w,
-        //     x: oParameters.classes.first.arr[1].x
-        // });
-        //
-        // oParameters.classes.second.arr[0].value = this.__getSum({
-        //     w: oParameters.classes.second.w,
-        //     x: oParameters.classes.second.arr[0].x
-        // });
-        // oParameters.classes.second.arr[1].value = this.__getSum({
-        //     w: oParameters.classes.second.w,
-        //     x: oParameters.classes.second.arr[1].x
-        // });
-        //
-        // oParameters.classes.first.avg = this.__getAvg(oParameters.classes.first.arr[0].value, oParameters.classes.first.arr[1].value);
-        // oParameters.classes.second.avg = this.__getAvg(oParameters.classes.second.arr[0].value, oParameters.classes.second.arr[1].value);
-        //
-        // oParameters.classes.avg = this.__getAvg(oParameters.classes.first.avg, oParameters.classes.second.avg);
-        // oParameters.classes.w = oParameters.classes.second.w;
-        //
-        // this.__getStatuses({
-        //     arr: oParameters.classes.first.arr,
-        //     activation: oParameters.activation,
-        //     avg: oParameters.classes.first.avg
-        // });
-        //
-        // this.__getStatuses({
-        //     arr: oParameters.classes.second.arr,
-        //     activation: oParameters.activation,
-        //     avg: oParameters.classes.second.avg
-        // });
-        //
-        // node.delete();
-        // node.create(oParameters.classes);
+        await node.delete();
+        await node.create(oParameters);
     },
 
     __equalsCount(learnTable, researchTable) {
@@ -438,6 +391,39 @@ module.exports = {
     },
 
     async research(oParameters) {
+        let learnData = await node.read();
+        let equals = [];
+
+        learnData.tables.forEach((table, tableNum)=>{
+            equals.push(this.__equalsCount(table, oParameters.tables[0]));
+        });
+
+        let result = {
+            equals
+        };
+
+        result.x = this.__toBinaryArray(oParameters.tables[0]);
+
+        let values = [];
+        learnData.neurons.forEach((neuron, index)=>{
+            values.push(this.__getSum({
+               w:neuron.info.w,
+               x:result.x
+           }));
+        });
+        result.values = values;
+
+        let statuses = [];
+        learnData.neurons.forEach((neuron, index)=>{
+            statuses.push(this.__basedActivation({
+                avg: neuron.avg,
+                value: result.values[index]
+            }))
+        });
+        result.statuses = statuses;
+
+        return result;
+
         // let learnData = await node.read();
         // let result = {};
         //

@@ -10,29 +10,20 @@ const constants = require("../../../const/const")
 class Page extends React.Component {
     state = {
         colorTable: [["black", "white", "black", "white", "black"],
-                ["white", "black", "white", "black", "white"],
-                ["black", "white", "black", "white", "black"],
-                ["white", "black", "white", "black", "white"]],
+            ["white", "black", "white", "black", "white"],
+            ["black", "white", "black", "white", "black"],
+            ["white", "black", "white", "black", "white"]],
         tables: [],
         activation: constants.activations.bipolar,
         learnResults: {
-            first: {
-                arr: [],
-                w: [],
-                avg: 0
-            },
-            second: {
-                arr: [],
-                w: [],
-                avg: 0
-            },
-            avg: 0,
-            activation: ""
+            tables: [],
+            arrays: [],
+            neurons: [],
         },
         researchResults: {
             equals: [],
-            status: 0,
-            value: 0
+            status: "",
+            value: ""
         }
     };
 
@@ -40,7 +31,7 @@ class Page extends React.Component {
         super(props);
     };
 
-    addElement(e){
+    addElement(e) {
         e.preventDefault();
 
         let tables = this.state.tables;
@@ -49,55 +40,55 @@ class Page extends React.Component {
         this.setState({tables});
     };
 
-    deleteElement(e){
-      e.preventDefault();
+    deleteElement(e) {
+        e.preventDefault();
 
-      let tables = this.state.tables;
-      tables.pop();
-      this.setState({tables});
+        let tables = this.state.tables;
+        tables.pop();
+        this.setState({tables});
     };
 
-    addColumn(e){
+    addColumn(e) {
         e.preventDefault();
 
         let tables = this.state.tables;
 
-        tables.forEach((table, tableNum)=>{
-           table.forEach((row, index)=>{
-              row.push("white");
-           });
+        tables.forEach((table, tableNum) => {
+            table.forEach((row, index) => {
+                row.push("white");
+            });
         });
 
         this.setState({tables});
     };
 
-    deleteColumn(e){
+    deleteColumn(e) {
         e.preventDefault();
 
         let tables = this.state.tables;
 
-        tables.forEach((table, tableNum)=>{
-           table.forEach((row, index)=>{
-             row.pop();
-           });
+        tables.forEach((table, tableNum) => {
+            table.forEach((row, index) => {
+                row.pop();
+            });
         });
 
-        this.setState({tables });
+        this.setState({tables});
     };
 
-    addRow(e){
+    addRow(e) {
         e.preventDefault();
 
         let tables = this.state.tables;
-        if(tables[0].length === 0){
-            tables.forEach((table, tableNum)=>{
-               table.push(["white"]);
+        if (tables[0].length === 0) {
+            tables.forEach((table, tableNum) => {
+                table.push(["white"]);
             });
             this.setState({tables});
             return;
         }
 
-        tables.forEach((table, tableNum)=>{
+        tables.forEach((table, tableNum) => {
             let newRow = JSON.parse(JSON.stringify(table[table.length - 1]));
             table.push(newRow);
         });
@@ -105,15 +96,15 @@ class Page extends React.Component {
         this.setState({tables});
     };
 
-    deleteRow(e){
-      e.preventDefault();
+    deleteRow(e) {
+        e.preventDefault();
 
-      let tables = this.state.tables;
-      tables.forEach((table, tableNum)=>{
-         table.pop();
-      });
+        let tables = this.state.tables;
+        tables.forEach((table, tableNum) => {
+            table.pop();
+        });
 
-      this.setState({tables});
+        this.setState({tables});
     };
 
     changeColor = (event) => {
@@ -127,7 +118,7 @@ class Page extends React.Component {
         let currentTable = tables[number];
 
         let element = currentTable[row][column];
-        if(element === "black"){
+        if (element === "black") {
             element = "white";
         } else {
             element = "black";
@@ -140,33 +131,33 @@ class Page extends React.Component {
 
     };
 
-    async learn(e){
-      let body = this.__getDataForRequest();
-      const jsonString = JSON.stringify(body);
+    async learn(e) {
+        let body = this.__getDataForRequest();
+        const jsonString = JSON.stringify(body);
 
-      await fetch(`${config.server}/learn`,{
-         method:'POST',
-         headers: {
-             'Accept': 'application/json',
-             'Content-type': 'application/json',
-             'Content-string': jsonString.length
-         },
-          body: jsonString
-      });
+        await fetch(`${config.server}/learn`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json',
+                'Content-string': jsonString.length
+            },
+            body: jsonString
+        });
 
-      await this.__getLearnResults();
+        await this.__getLearnResults();
     };
 
-    async research(e){
+    async research(e) {
         let body = this.__getDataForRequest();
-        if(body.tables.length !== 1){
+        if (body.tables.length !== 1) {
             alert("Исследовать можно только одно изображение");
-            return ;
+            return;
         }
         const jsonString = JSON.stringify(body);
 
         let response = await fetch(`${config.server}/research`, {
-            method:'POST',
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-type': 'application/json',
@@ -176,6 +167,19 @@ class Page extends React.Component {
         });
 
         let researchResults = await response.json();
+        researchResults.status = "";
+        researchResults.statuses.forEach((status, index) => {
+            if (status > 0) {
+                researchResults.status += index.toString();
+                researchResults.status += "; ";
+            }
+        });
+
+        researchResults.value = "";
+        researchResults.values.forEach((value, index) => {
+            researchResults.value += value.toString();
+            researchResults.value += "; ";
+        });
         this.setState({researchResults});
     }
 
@@ -183,13 +187,13 @@ class Page extends React.Component {
         let coloredTables = this.state.tables;
 
         let tables = [];
-        coloredTables.forEach((table, tableNum)=>{
-           tables.push(this.__getFlagsByColors(table));
+        coloredTables.forEach((table, tableNum) => {
+            tables.push(this.__getFlagsByColors(table));
         });
 
         return ({
             tables,
-            activation: this.state.activation
+            activation: constants.activations.binary
         })
     }
 
@@ -224,14 +228,14 @@ class Page extends React.Component {
         )
     };
 
-    async __getLearnResults(){
+    async __getLearnResults() {
         let response = await fetch(`${config.server}`);
         let learnResults = await response.json();
 
         this.setState({learnResults});
     }
 
-    async componentWillMount(){
+    async componentWillMount() {
         await this.__getLearnResults();
     }
 
@@ -239,60 +243,77 @@ class Page extends React.Component {
         return (
             <div className="App">
                 <div>
-                    <h3>Результаты последнего обучения:</h3>
-                    <p>Среднее арифметическое: {this.state.learnResults.avg}</p>
-                    <p>Значение первого класса: {this.state.learnResults.first.avg}</p>
-                    <p>Значение второго класса: {this.state.learnResults.second.avg}</p>
+                    <h3>Результаты последнего обучения: </h3>
+                    {
+                        this.state.learnResults.neurons.map((neuron, neuronNum) => {
+                            return (<div>
+                                <p>Среднее значение для {neuronNum + 1} узла: {neuron.avg}</p>
+                                <p>Количество итераций: {neuron.info.iterations}</p>
+                            </div>)
+                        })
+                    }
                 </div>
                 <div>
-                    <button className="btn btn-outline-success myBtn" onClick={this.addElement.bind(this)}>Добавить элемент</button>
-                    <button className="btn btn-outline-danger myBtn" onClick={this.deleteElement.bind(this)}>Удалить элемент</button>
+                    <button className="btn btn-outline-success myBtn" onClick={this.addElement.bind(this)}>Добавить
+                        элемент
+                    </button>
+                    <button className="btn btn-outline-danger myBtn" onClick={this.deleteElement.bind(this)}>Удалить
+                        элемент
+                    </button>
                 </div>
                 <div>
-                    <button className="btn btn-outline-success myBtn" onClick={this.addColumn.bind(this)}>Добавить столбец</button>
-                    <button className="btn btn-outline-danger myBtn" onClick={this.deleteColumn.bind(this)}>Удалить столбец</button>
+                    <button className="btn btn-outline-success myBtn" onClick={this.addColumn.bind(this)}>Добавить
+                        столбец
+                    </button>
+                    <button className="btn btn-outline-danger myBtn" onClick={this.deleteColumn.bind(this)}>Удалить
+                        столбец
+                    </button>
                 </div>
                 <div>
-                    <button className="btn btn-outline-success myBtn" onClick={this.addRow.bind(this)}>Добавить строку</button>
-                    <button className="btn btn-outline-danger myBtn" onClick={this.deleteRow.bind(this)}>Удалить строку</button>
+                    <button className="btn btn-outline-success myBtn" onClick={this.addRow.bind(this)}>Добавить строку
+                    </button>
+                    <button className="btn btn-outline-danger myBtn" onClick={this.deleteRow.bind(this)}>Удалить
+                        строку
+                    </button>
                 </div>
-                <div>
-                    <div className="Radiogroup">
-                        <p><input type="radio" name="activation"
-                                  value={constants.activations.bipolar}
-                                  checked={this.state.activation === constants.activations.bipolar}
-                                  onChange={this.changeActivation}/>Биполярная функция
-                            активации</p>
-                        <p><input type="radio" name="activation"
-                                  value={constants.activations.binary}
-                                  onChange={this.changeActivation}/>Бинарная функция
-                            активации</p>
-                        <p><input type="radio" name="activation"
-                                  value={constants.activations.linear}
-                                  onChange={this.changeActivation}/>Линейная биполярная функция
-                            активации</p>
-                    </div>
-                </div>
+                {/*<div>*/}
+                {/*    <div className="Radiogroup">*/}
+                {/*        <p><input type="radio" name="activation"*/}
+                {/*                  value={constants.activations.bipolar}*/}
+                {/*                  checked={this.state.activation === constants.activations.bipolar}*/}
+                {/*                  onChange={this.changeActivation}/>Биполярная функция*/}
+                {/*            активации</p>*/}
+                {/*        <p><input type="radio" name="activation"*/}
+                {/*                  value={constants.activations.binary}*/}
+                {/*                  onChange={this.changeActivation}/>Бинарная функция*/}
+                {/*            активации</p>*/}
+                {/*        <p><input type="radio" name="activation"*/}
+                {/*                  value={constants.activations.linear}*/}
+                {/*                  onChange={this.changeActivation}/>Линейная биполярная функция*/}
+                {/*            активации</p>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
                 <div>
                     {
-                        this.state.tables.map((table, tableNum)=>{
-                            return(<Table num={tableNum} rows={table} onClick={this.changeColor}/>)
+                        this.state.tables.map((table, tableNum) => {
+                            return (<Table num={tableNum} rows={table} onClick={this.changeColor}/>)
                         })
                     }
                 </div>
                 <div>
                     <button className="btn btn-outline-primary myBtn" onClick={this.learn.bind(this)}>Обучить</button>
-                    <button className="btn btn-outline-primary myBtn" onClick={this.research.bind(this)}>Исследовать</button>
+                    <button className="btn btn-outline-primary myBtn" onClick={this.research.bind(this)}>Исследовать
+                    </button>
                 </div>
                 <div>
                     <h3>Результаты исследования</h3>
                     {
-                        this.state.researchResults.equals.map((result, index)=>{
-                          return(<p>Степень соответствия с {index + 1} картинкой: {result}</p>)
+                        this.state.researchResults.equals.map((result, index) => {
+                            return (<p>Степень соответствия с {index + 1} картинкой: {result}</p>)
                         })
                     }
-                    <p>Класс: {this.state.researchResults.status}</p>
-                    <p>Значение: {this.state.researchResults.value}</p>
+                    <p>Классы: {this.state.researchResults.status}</p>
+                    <p>Значения: {this.state.researchResults.value}</p>
                 </div>
             </div>
         )
