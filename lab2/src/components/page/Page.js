@@ -170,7 +170,7 @@ class Page extends React.Component {
         researchResults.status = "";
         researchResults.statuses.forEach((status, index) => {
             if (status > 0) {
-                researchResults.status += index.toString();
+                researchResults.status += (index + 1).toString();
                 researchResults.status += "; ";
             }
         });
@@ -276,23 +276,6 @@ class Page extends React.Component {
                         строку
                     </button>
                 </div>
-                {/*<div>*/}
-                {/*    <div className="Radiogroup">*/}
-                {/*        <p><input type="radio" name="activation"*/}
-                {/*                  value={constants.activations.bipolar}*/}
-                {/*                  checked={this.state.activation === constants.activations.bipolar}*/}
-                {/*                  onChange={this.changeActivation}/>Биполярная функция*/}
-                {/*            активации</p>*/}
-                {/*        <p><input type="radio" name="activation"*/}
-                {/*                  value={constants.activations.binary}*/}
-                {/*                  onChange={this.changeActivation}/>Бинарная функция*/}
-                {/*            активации</p>*/}
-                {/*        <p><input type="radio" name="activation"*/}
-                {/*                  value={constants.activations.linear}*/}
-                {/*                  onChange={this.changeActivation}/>Линейная биполярная функция*/}
-                {/*            активации</p>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
                 <div>
                     {
                         this.state.tables.map((table, tableNum) => {

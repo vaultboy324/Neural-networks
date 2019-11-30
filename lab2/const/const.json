@@ -18,5 +18,6 @@
       "bipolarNegative": -1,
       "text": "Биполярная"
     }
-  }
+  },
+  "learnCoef": 0.05
 }

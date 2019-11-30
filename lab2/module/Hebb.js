@@ -103,7 +103,7 @@ module.exports = {
         // }
 
         if (!oParameters.w) {
-            w[0] = 0;
+            w.push(0);
             oParameters.arr[0].x.forEach((element, index) => {
                 w.push(0);
             });
@@ -245,20 +245,21 @@ module.exports = {
 
     __fixWeights(oParameters) {
         oParameters.badNodes.forEach((badNode, index) => {
-            if (badNode.status > badNode.y) {
-                let deltaW = 0.01 * this.__getBinaryValue(1, badNode.y);
-                oParameters.info.w[0] += deltaW;
-            } else if (badNode.status < badNode.y){
-                let deltaW = 0.01 * this.__getBinaryValue(1, badNode.y);
-                oParameters.info.w[0] -= deltaW;
-            }
+            oParameters.info.w[0] += constants.learnCoef * (badNode.y - badNode.status);
+            // let deltaW = 0.05 * this.__getBipolarValue(1, badNode.y);
+            // if (badNode.status > badNode.y) {
+            //     oParameters.info.w[0] -= deltaW;
+            // } else if (badNode.status < badNode.y){
+            //     oParameters.info.w[0] += deltaW;
+            // }
             badNode.x.forEach((element, elementNum) => {
-                let deltaW = 0.01 * this.__getBinaryValue(element, badNode.y);
-                if (badNode.status < badNode.y) {
-                    oParameters.info.w[elementNum - 1] += deltaW;
-                } else if (badNode.status > badNode.y) {
-                    oParameters.info.w[elementNum - 1] -= deltaW;
-                }
+                oParameters.info.w[elementNum + 1] += constants.learnCoef * (badNode.y - badNode.status) * element;
+                // let deltaW = 0.05 * this.__getBipolarValue(element, badNode.y);
+                // if (badNode.status < badNode.y) {
+                //     oParameters.info.w[elementNum + 1] += deltaW;
+                // } else if (badNode.status > badNode.y) {
+                //     oParameters.info.w[elementNum + 1] -= deltaW;
+                // }
             });
         });
     },
