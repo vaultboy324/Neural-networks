@@ -1,0 +1,6 @@
+{
+  "mongoose": {
+    "uri": "mongodb://localhost:27017/NeuralNetworks"
+  },
+  "server": "http://localhost:5000"
+}
