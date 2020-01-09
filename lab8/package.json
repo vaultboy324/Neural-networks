@@ -1,0 +1,22 @@
+{
+  "name": "lab1",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "express": "^4.17.1",
+    "mathjs": "^6.3.0",
+    "mongoose": "^5.7.12",
+    "neataptic": "^1.4.7",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
+    "react-scripts": "0.9.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
